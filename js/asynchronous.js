@@ -68,7 +68,7 @@ const COIN_URL = "https://api.coinpaprika.com/v1/tickers";
 const getCoinsDataWithApi = () => axios.get(COIN_URL);
 
 // .then().catch() 방식
-const getCoinsByThenCatchMethod = () => {
+const getCoinsByThenCatchType = () => {
   console.log("Promise", 1);
   getCoinsDataWithApi()
     .then(
@@ -83,10 +83,10 @@ const getCoinsByThenCatchMethod = () => {
     .then(() => console.log("Promise", 3))
     .catch((error) => console.error(error, "에러"));
 };
-getCoinsByThenCatchMethod();
+getCoinsByThenCatchType();
 
 // async await 방식
-const getCoinsByAsyncAwaitMethod = async () => {
+const getCoinsByAsyncAwaitType = async () => {
   try {
     console.log("async-await", 1);
     console.log(await getCoinsDataWithApi());
@@ -96,4 +96,4 @@ const getCoinsByAsyncAwaitMethod = async () => {
     console.log(error);
   }
 };
-getCoinsByAsyncAwaitMethod();
+getCoinsByAsyncAwaitType();
