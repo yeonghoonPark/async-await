@@ -53,6 +53,10 @@ const getCreatedNewId = () => {
   });
 };
 
+/*********************************
+ *********  map()의 경우  *********
+ ********************************/
+
 /**
  * forLoop, 배열 method가 아닌 일반 반복문인 forLoop의 경우 await처리를 해줄 수 있다.
  */
@@ -67,7 +71,7 @@ const changeUserId1 = async () => {
 // changeUserId1();
 
 /**
- * map, 비동기 처리를 해주지 못한 실행되지 않은 Promise배열을 반환 함.
+ * map, 비동기 처리를 해주지 못한 실행되지 않은 pending상태의 Promise배열을 반환 함.
  * 이유, await는 Promise객체를 실행하고 기다려주지만 Promise배열로는 그렇게 할 수 없다.
  */
 const changeUserId2 = () => {
@@ -86,9 +90,11 @@ const changeUserId2 = () => {
  * 3. 만약 반환하는 Promise가 거부된다면, 반환하는 Promise중 거부 된 첫번째 Promise를 반환하며 거부 된 해당 Promise의 reject()만 실행한다.
  *
  * 즉, 모든 Promise들이 resolve했을 때의 결과를 보장 받고 싶을 때 사용할 수 있다.
+ * 만약 resolve()나 reject() 여부에 관계 없이 (조건이 있다면 조건에 맞는)가장 먼저 수행 된 결과를 받고 싶다면 Promise.race()를 사용하면 된다.
  * 만약 reject(), 거부 된 Promise가 있음에도 불구하고 모든 Promise를 순행하고 싶다면 Promise.allSettled()를 사용하면 된다.
- * 만약 resolve()나 reject() 여부에 관계 없이 (조건에 맞는)가장 먼저 수행 된 결과를 받고 싶다면 Promise.race()를 사용하면 된다.
  */
+
+// Promise.all()
 const changeUserId3 = async () => {
   const newUserInfomation = await Promise.all(
     userInfomation.map(async (item) => {
@@ -99,3 +105,66 @@ const changeUserId3 = async () => {
   console.log(newUserInfomation, "후");
 };
 // changeUserId3();
+
+// Promise.race()
+const changeUserId4 = async () => {
+  const newUserInfomation = await Promise.race(
+    userInfomation.map(async (item) => {
+      item.id = await getCreatedNewId();
+      return item;
+    }),
+  );
+  console.log(newUserInfomation, "후");
+};
+// changeUserId4();
+
+/*********************************
+ *******  reduce()의 경우  ********
+ ********************************/
+
+// const changeUserId5 = async () => {
+//   const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
+//     console.log("before", acc.id, acc);
+//     acc[cur.id] = await getCreatedNewId(cur);
+//     console.log("after", acc.id, acc);
+//     return acc;
+//   }, {});
+//   console.log(newUserInfomation, "후");
+// };
+// // changeUserId5();
+
+// const changeUserId6 = async () => {
+//   const newUserInfomation = (
+//     await Promise.all(
+//       userInfomation.map((item) => {
+//         return getCreatedNewId(item);
+//       }),
+//     )
+//   ).reduce((result, message, index) => {
+//     const user = userInfomation[index];
+//     result[user.id] = message;
+//     return result;
+//   }, {});
+//   console.log(newUserInfomation, "후");
+// };
+// // changeUserId6();
+
+// const changeUserId7 = async () => {
+//   const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
+//     let result = await acc;
+//     result[cur.id] = await getCreatedNewId(cur);
+//     return result;
+//   }, {});
+
+//   console.log(newUserInfomation, "후");
+// };
+// changeUserId7();
+
+const test = () => {
+  const newArr = userInfomation.reduce((item, cur) => {
+    console.log(item, "!");
+    console.log(cur, "@");
+  }, {});
+  console.log(newArr);
+};
+test();
