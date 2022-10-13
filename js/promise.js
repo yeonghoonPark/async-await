@@ -168,3 +168,26 @@ const test = () => {
   console.log(newArr);
 };
 test();
+
+const test2 = (...spredArr) => {
+  let sum;
+  for (let i = 0; i < spredArr.length; i++) {
+    if (i == 0) {
+      if (typeof spredArr[i] == "number") {
+        sum = 0;
+      } else {
+        sum = "";
+      }
+    }
+    sum += spredArr[i];
+  }
+  return sum;
+};
+console.log(test2("a", "b"));
+
+const test3 = (red, ...spredArr) => {
+  return spredArr.reduce((acc, cur) => {
+    return acc + cur;
+  }, red);
+};
+console.log(test3("c", "d", 4, 5, 6));
