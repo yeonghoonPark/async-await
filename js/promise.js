@@ -1,12 +1,14 @@
 "use strict";
 
-/**
+/******************************************************************************************
+ *
  * map()과 reduce()에서의 await-async 사용법
  *
  * 참고사이트 및 출처
  * https://velog.io/@minsangk/2019-09-06-0209-작성됨-eik06xy8mm
  * https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Promise
- */
+ *
+ * ****************************************************************************************/
 
 // object array
 const userInfomation = [
@@ -49,7 +51,7 @@ const getCreatedNewId = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(id++);
-    }, 3000);
+    }, 2000);
   });
 };
 
@@ -122,72 +124,69 @@ const changeUserId4 = async () => {
  *******  reduce()의 경우  ********
  ********************************/
 
-// const changeUserId5 = async () => {
-//   const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
-//     console.log("before", acc.id, acc);
-//     acc[cur.id] = await getCreatedNewId(cur);
-//     console.log("after", acc.id, acc);
-//     return acc;
-//   }, {});
-//   console.log(newUserInfomation, "후");
-// };
-// // changeUserId5();
+/**
+ * reduce, await는 실제로 함수가 결과를 줄 때까지 기다리는 것이 아니라 await가 사용 된 시점에서 이미 pending 상태의 Promise를 리턴한 상태이다.
+ */
+const changeUserId5 = async () => {
+  const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
+    console.log("before", acc.id, acc);
+    acc[cur.id] = await getCreatedNewId(cur);
+    console.log("after", acc.id, acc);
+    return acc;
+  }, {});
+  console.log(newUserInfomation, "후");
+};
+// changeUserId5();
 
-// const changeUserId6 = async () => {
-//   const newUserInfomation = (
-//     await Promise.all(
-//       userInfomation.map((item) => {
-//         return getCreatedNewId(item);
-//       }),
-//     )
-//   ).reduce((result, message, index) => {
-//     const user = userInfomation[index];
-//     result[user.id] = message;
-//     return result;
-//   }, {});
-//   console.log(newUserInfomation, "후");
-// };
-// // changeUserId6();
+/**
+ * Promise.all()을 이용한 map() + reduce()
+ */
+const changeUserId6 = async () => {
+  const newUserInfomation = (
+    await Promise.all(
+      userInfomation.map((item) => {
+        return getCreatedNewId(item);
+      }),
+    )
+  ).reduce((result, message, index) => {
+    const user = userInfomation[index];
+    result[user.id] = message;
+    return result;
+  }, {});
+  console.log(newUserInfomation, "후");
+};
+// changeUserId6();
 
-// const changeUserId7 = async () => {
-//   const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
-//     let result = await acc;
-//     result[cur.id] = await getCreatedNewId(cur);
-//     return result;
-//   }, {});
+/**
+ * Promise.resolve()를 이용한 방법
+ * Promise.resolve()는 넘겨준 값을 그대로 resolve 해주는 Promise를 리턴한다.
+ */
 
-//   console.log(newUserInfomation, "후");
-// };
+// 1. initialValue를 Promise.resolve()로 설정
+// 2. iteration 안에서 전달 받은 Promise를 accumulator로 찾아오기 위해 await promise.then()으로 받는다.
+// 3. accumulator를 변경한다.
+// 4. 다음 iteration 에서는 다시 Promise로 넘기기 위해서 Promise.resolve(result)를 리턴한다.
+const changeUserId7 = async () => {
+  const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
+    let result = await acc.then();
+    result[cur.id] = await getCreatedNewId();
+    return Promise.resolve(result);
+  }, Promise.resolve({}));
+  console.log(newUserInfomation, "후");
+};
 // changeUserId7();
 
-const test = () => {
-  const newArr = userInfomation.reduce((item, cur) => {
-    console.log(item, "!");
-    console.log(cur, "@");
+/**
+ * Promise.resolve()를 이용했지만 생략가능하기에 생략한 방법
+ * async-await의 동작방식상 async함수의 리턴값은 Promise.resolve로 래핑하지 않아도 Promise로 자동래핑된다.
+ */
+const changeUserId8 = async () => {
+  const newUserInfomation = await userInfomation.reduce(async (acc, cur) => {
+    let result = await acc;
+    result[cur.id] = await getCreatedNewId(cur);
+    return result;
   }, {});
-  console.log(newArr);
-};
-test();
 
-const test2 = (...spredArr) => {
-  let sum;
-  for (let i = 0; i < spredArr.length; i++) {
-    if (i == 0) {
-      if (typeof spredArr[i] == "number") {
-        sum = 0;
-      } else {
-        sum = "";
-      }
-    }
-    sum += spredArr[i];
-  }
-  return sum;
+  console.log(newUserInfomation, "후");
 };
-console.log(test2("a", "b"));
-
-const test3 = (red, ...spredArr) => {
-  return spredArr.reduce((acc, cur) => {
-    return acc + cur;
-  }, red);
-};
-console.log(test3("c", "d", 4, 5, 6));
+// changeUserId8();
